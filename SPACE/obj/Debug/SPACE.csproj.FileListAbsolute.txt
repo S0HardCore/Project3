@@ -1,0 +1,9 @@
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\bin\Debug\SPACE.exe.config
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\bin\Debug\SPACE.exe
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\bin\Debug\SPACE.pdb
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.csprojResolveAssemblyReference.cache
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.Properties.Resources.resources
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.csproj.GenerateResource.Cache
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.exe
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.pdb
+c:\users\oleg\documents\visual studio 2013\Projects\SPACE\SPACE\obj\Debug\SPACE.Form1.resources
