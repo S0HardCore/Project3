@@ -20,12 +20,13 @@ namespace SPACE
         Timer updateTimer = new Timer();
         Random rand = new Random(DateTime.Now.Millisecond);
         SoundPlayer SP = new SoundPlayer(Properties.Resources.theme);
-        Boolean SPB = false, Paused;
+        Boolean SPB = true, Paused;
         Boolean[] ButtonPressed = new Boolean[3];
-        float mouseMoveDistance = 0f, viewAngle = 0f;
+        float mouseMoveDistance = 0f;
         Point mouseMoveStart, viewStart;
-        float[] viewDistance = new float[3] { 1f, 1f, 1f };
-        float[] offsetDistance = new float[3] { 0f, 0f, 0f };
+        float[] viewDistance = new float[3] { 1f, 1f, 1f },
+            offsetDistance = new float[3] { 0f, 0f, 0f },
+            viewAngle = new float[2] { 0f, 0f };
 
         class Star
         {
@@ -50,25 +51,17 @@ namespace SPACE
             AnT.Paint += new PaintEventHandler(pDraw);
             AnT.KeyDown += new KeyEventHandler(pKeyDown);
             AnT.KeyUp += new KeyEventHandler(pKeyUp);
-            AnT.MouseClick += new MouseEventHandler(pMouseClick);
+            //AnT.MouseClick += new MouseEventHandler(pMouseClick);
             AnT.MouseDown += new MouseEventHandler(pMouseDown);
             AnT.MouseUp += new MouseEventHandler(pMouseUp);
             AnT.MouseMove += new MouseEventHandler(pMouseMotion);
-            //AnT.MouseWheel += new MouseEventHandler(pMouseWheel);
             //this.Paint += new PaintEventHandler(pDraw);
             //this.KeyDown += new KeyEventHandler(pKeyDown);
             updateTimer.Interval = 1;
             updateTimer.Tick += new EventHandler(pUpdate);
             updateTimer.Start();
         }
-        
-        //void pMouseWheel(object sender, MouseEventArgs e)
-        //{
-        //    viewOffset[2] += (float)(e.Delta / 120);
-        //    Gl.glTranslatef(0, 0, viewOffset[2]);
-        //    viewOffset[2] = (float)Math.Round(viewOffset[2], 1);
-        //}
-        
+                
         void pMouseUp(object sender, MouseEventArgs e)
         {
             switch (e.Button)
@@ -118,41 +111,17 @@ namespace SPACE
             {
                 double x = viewStart.X,
                     y = viewStart.Y;
-                if (viewMode != 1)
-                {
-                    if (e.X < x)
-                        viewAngle += (float)Math.Sqrt(Math.Pow((e.X - x), 2) + Math.Pow((e.Y - y), 2));
-                    else
-                        viewAngle -= (float)Math.Sqrt(Math.Pow((e.X - x), 2) + Math.Pow((e.Y - y), 2));
-                }
-                else
-                {
-                    if (e.Y > y)
-                        viewAngle += (float)Math.Sqrt(Math.Pow((e.X - x), 2) + Math.Pow((e.Y - y), 2));
-                    else
-                        viewAngle -= (float)Math.Sqrt(Math.Pow((e.X - x), 2) + Math.Pow((e.Y - y), 2));
-                }
+
+                 viewAngle[1] += (float)(e.X - x);
+                 viewAngle[0] += (float)(e.Y - y);
+                 viewStart = e.Location;
             }
         }
 
-        void pMouseClick(object sender, MouseEventArgs e)
-        {
-            //switch(e.Button)
-            //{
-            //    case MouseButtons.Middle:
+        //void pMouseClick(object sender, MouseEventArgs e)
+        //{
 
-            //        break;
-            //    case MouseButtons.Left:
-            //        viewOffset[2] -= 5;
-            //        Gl.glTranslatef(0, 0, -5);
-            //        break;
-            //    case MouseButtons.Right:
-            //        viewOffset[2] += 5;
-            //        Gl.glTranslatef(0, 0, 5);
-            //        break;
-            //}
-
-        }
+        //}
 
         void pKeyDown(object sender, KeyEventArgs e)
         {
@@ -183,13 +152,16 @@ namespace SPACE
                         Paused = false;
                     break;
                 case Keys.NumPad0:
-                        mouseMoveDistance = 0f;
+                    mouseMoveDistance = 0f;
                     break;
                 case Keys.NumPad5:
-                    viewAngle = 0f;
+                    for (int s = 0; s < 2; ++s)
+                    {
+                        viewAngle[s] = 0f;
+                        viewDistance[s] = 0f;
+                        offsetDistance[s] = 0;
+                    }
                     viewMode = 0;
-                    offsetDistance[0] = 0;
-                    offsetDistance[1] = 0;
                     break;
                 case Keys.NumPad9:
                     if (starList.Count <= 50000)
@@ -199,14 +171,13 @@ namespace SPACE
                                              1.0f * (rand.Next(1000) - 1000)));
                     break;
                 case Keys.NumPad6:
-                    if (starList.Count >= 10000)
+                    if (starList.Count > 10000)
                         starList.RemoveRange(starList.Count - 10000, 10000);
                     break;
                 case Keys.NumPad1:
-                case Keys.NumPad2:
-                case Keys.NumPad3:
-                    viewAngle = 0f;
-                    viewMode = (SByte)((int)e.KeyValue - (int)Keys.NumPad0);
+                    viewAngle[0] = 0f;
+                    viewAngle[1] = 0f;
+                    viewMode = 1;
                     break;
                 case Keys.B:
                     if (SPB)
@@ -242,8 +213,8 @@ namespace SPACE
         {
             if (!Paused)
             {
-                offsetDistance[0] += KeyPressed[0] * 2;
-                offsetDistance[1] += KeyPressed[1] * 2;
+                offsetDistance[0] += KeyPressed[0] * 3;
+                offsetDistance[1] += KeyPressed[1] * 3;
                 foreach (var star in starList)
                 {
                     star.z += speed;
@@ -279,10 +250,13 @@ namespace SPACE
             Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
             string output;
 
-            float nx = viewMode == 1 ? 1 : 0, ny = viewMode == 2 ? 1 : 0, nz = viewMode == 3 ? 1 : 0;
             if (viewMode != 0)
-                Gl.glRotatef(viewAngle / 50, nx, ny, nz);
+            {
+                Gl.glRotatef(viewAngle[0] / 50, 1, 0, 0);
+                Gl.glRotatef(viewAngle[1] / 50, 0, 1, 0);
+            }
             Gl.glTranslatef(offsetDistance[0], offsetDistance[1], mouseMoveDistance / 10);
+
             foreach (var star in starList)
             {
                 float brightness = 70 / Math.Abs(star.z - 130);
@@ -291,25 +265,29 @@ namespace SPACE
                 Gl.glBegin(Gl.GL_POINTS);
                 Gl.glVertex3f(star.x, star.y, star.z);
                 Gl.glEnd();
-                //if (rand.Next(starList.Count) == 1)
-                //{
-                //    Gl.glRasterPos3f(star.x, star.y, star.z);
-                //    output = Math.Round(starList[0].x, 2).ToString() + ";" + Math.Round(starList[0].y, 2).ToString() + ";" + Math.Round(starList[0].z, 2).ToString();
-                //    Glut.glutBitmapString(Glut.GLUT_BITMAP_TIMES_ROMAN_24, output);
-                //}
             }
+
+            Gl.glTranslated(30, 35, 500);
+            Gl.glColor3d(1, 1, 1);
+            Glut.glutWireTorus(30, 65, 20, 20);
+            Gl.glColor3d(0.01, 0.01, 0.2);
+            Glut.glutSolidTorus(30, 65, 20, 20);
+            Gl.glTranslated(-30, -35, -500);
+
             Gl.glTranslatef(-offsetDistance[0], -offsetDistance[1], -mouseMoveDistance / 10);
-            //Gl.glRotatef();
             if (viewMode != 0)
-                Gl.glRotatef(-viewAngle / 50, nx, ny, nz);
+            {
+                Gl.glRotatef(-viewAngle[0] / 50, 1, 0, 0);
+                Gl.glRotatef(-viewAngle[1] / 50, 0, 1, 0);
+            }
             Gl.glFlush();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             for (int q = 0; q < 20000; ++q)
-                starList.Add(new Star(1.0f * (rand.Next(2 * RANGE) - RANGE),
-                                      1.0f * (rand.Next(2 * RANGE) - RANGE),
+                starList.Add(new Star(1.0f * (rand.Next(3 * RANGE) - RANGE),
+                                      1.0f * (rand.Next(3 * RANGE) - RANGE),
                                       1.0f * (rand.Next(RANGE * 3) - RANGE * 3)));
             Glut.glutInit();
             Glut.glutInitDisplayMode(Glut.GLUT_RGB | Glut.GLUT_DOUBLE | Glut.GLUT_DEPTH);
@@ -319,7 +297,7 @@ namespace SPACE
 
             Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glLoadIdentity();
-            Glu.gluPerspective(45, (float)AnT.Width / (float)AnT.Height, 0.1, 1000);
+            Glu.gluPerspective(45, (float)AnT.Width / (float)AnT.Height, 0.1, 600);
             Gl.glMatrixMode(Gl.GL_MODELVIEW);
             Gl.glLoadIdentity();
             Gl.glEnable(Gl.GL_DEPTH_TEST);
